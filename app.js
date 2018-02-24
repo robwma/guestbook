@@ -48,8 +48,8 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use('/', index);
 
 
-app.listen(3004);
-console.log("Listening on port 3004");
+app.listen(80);
+console.log("Listening on port 80");
 
 
 module.exports = app;
