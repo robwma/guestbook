@@ -1,9 +1,10 @@
 {
-    "name": "mongosurvey",
+    "name": "mongoguestbook",
     "version": "1.0.0",
-    "description": "Simple survey tool hosted with Azure Web App and MongoDB",
+    "description": "Simple guest book  hosted with Azure Web App and MongoDB",
     "main": "app.js",
     "scripts": {
+      "start": "node server",
       "test": "echo \"Error: no test specified\" && exit 1"
     },
     "author": "Rob Walters",
