@@ -1,0 +1,155 @@
+<!doctype html>
+<html>
+<head>
+    <title>Guestbook</title>
+    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.2/css/bootstrap.min.css"> <!-- load bootstrap css -->
+    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.min.css"> <!-- load fontawesome -->
+<style>
+.msg{
+    border-style: solid; border-width: 1px; padding: 3px;background-color: #1111;
+
+}
+</style>
+</head>
+<body>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+<script>
+window.onload = function () {
+
+    QueryResults();
+
+    var timer = setInterval(QueryResults, 4000);
+}
+function AddZero(num) {
+    return (num >= 0 && num < 10) ? "0" + num : num + "";
+}
+function QueryResults() {
+
+ $.ajax({
+            url: "/QueryGuestBook",
+            method: 'GET',
+            contentType: "application/json; charset=utf-8",
+            dataType: "json",
+            processData: false,
+        
+         }).done(function(data)
+            {
+           
+    $('#LastUpdated').empty();
+    var today = new Date();
+    var dd = today.getDate();
+    var mm = today.getMonth()+1; 
+    var yyyy = today.getFullYear();
+    if(dd<10) 
+    {
+      dd='0'+dd;
+    } 
+
+    if(mm<10) 
+    {
+      mm='0'+mm;
+    } 
+    today = mm+'-'+dd+'-'+yyyy;
+    var now=new Date();
+    var s=AddZero(now.getHours()) + ":" +  
+        AddZero(now.getMinutes()) + ":" + 
+        AddZero(now.getSeconds());
+    $('#LastUpdated').append('<i>' +  data.length + ' messages as of ' + today + '  ' + s + '</i><br>');
+    
+    $('#ResultsGrid').empty();
+
+    var m=JSON.stringify(data);
+
+    for (var t=0;t<data.length;t++)
+    {
+        var d = new Date(data[t].created_at);
+        $('#ResultsGrid').append('<div class="msg"><p style="background-color: #ffff">' + data[t].message + '</p><br>' + d.toLocaleDateString() + ' @ ' + d.toTimeString() + '<br>' + data[t].city + ', ' + data[t].region + '   ' + data[t].country + '</div><br><br>');
+
+    }
+
+              })
+            .fail(function(err)
+            {
+              console.log('fail->' + err.responseText);
+            });
+
+}
+function SaveMessage()
+{
+    if ($('#inputMessage').val().length<1)
+    {
+        $('#NoMessage').show();
+    }
+    else
+    {
+         $('#NoMessage').hide();
+         $.get("https://ipinfo.io", function(response) {
+
+        $('#PostingMessage').show();
+      
+ $.ajax({
+            url: "/",
+            method: 'POST',
+            data: JSON.stringify({MyMessage: $('#inputMessage').val(), UserInfo: response}),
+            contentType: "application/json; charset=utf-8",
+            processData: false
+            
+            }).done(function(data)
+            {  
+                $('#PostingMessage').hide();
+                window.location.replace("/");
+            })
+            .fail(function (err)
+            {
+                $('#PostingMessage').hide();
+                console.log("fail=" + JSON.stringify(err));
+                $('#MsgError').html('Error posting message : ' + err.responseText);
+                $('#MsgError').show();
+            });
+}, "jsonp")
+    }
+     
+}
+
+</script>
+<div class="container">
+
+    <div class="jumbotron text-center">
+        <h1>Guestbook</h1>
+        <label for="inputMessage">Please enter a message:</label><br>
+        <input type="text" class="form-control" maxlength="200" id="inputMessage" placeholder="Enter a short message for the guestbook." >
+        <br>
+        <button type="submit" class="btn btn-success" id="SaveMessage" onclick="SaveMessage()">Sign Guestbook</button><br>
+        <div class="alert alert-danger" id="NoMessage" style="display:none">
+          <strong>Opps!</strong> You forgot to type a message!
+        </div>
+        <div class="alert alert-info" id="PostingMessage" style="display:none">
+          Posting Message.....
+        </div>
+        
+        <div class="alert alert-danger" id="MsgError" style="display:none"></div>
+
+    </div>
+
+ <div class="row">
+    <div class="col-md-12">
+   <h2>Guestbook Messages</h2>
+   <div id="LastUpdated"></div>
+    </div>
+ </div>
+  <div class="row">
+    <div class="col-md-12">
+        <div id="ResultsGrid">
+        </div>
+    </div>
+  </div>
+  
+  <br>
+
+  </div>
+  
+
+</div>
+</body>
+</html>   
